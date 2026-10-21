@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Follows the system setting (values-night overrides this). -->
+    <style name="AppTheme" parent="AppTheme.Light" />
+
+    <style name="AppTheme.Light" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#2F6F5E</item>
+        <item name="android:colorPrimaryDark">#FAFAF7</item>
+        <item name="android:colorAccent">#2F6F5E</item>
+        <item name="android:windowBackground">#FAFAF7</item>
+        <item name="android:statusBarColor">#FAFAF7</item>
+        <item name="android:navigationBarColor">#FAFAF7</item>
+        <item name="android:textColorPrimary">#1D1D1B</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="AppTheme.Dark" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">#7CC4AE</item>
+        <item name="android:colorPrimaryDark">#151515</item>
+        <item name="android:colorAccent">#7CC4AE</item>
+        <item name="android:windowBackground">#151515</item>
+        <item name="android:statusBarColor">#151515</item>
+        <item name="android:navigationBarColor">#151515</item>
+        <item name="android:textColorPrimary">#ECECE8</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

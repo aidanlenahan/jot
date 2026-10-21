@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="new_note" android:enabled="true"
+        android:icon="@drawable/ic_sc_note" android:shortcutShortLabel="@string/sc_note" android:shortcutLongLabel="@string/sc_note">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.jot.notes" android:targetClass="com.jot.notes.EditorActivity" />
+    </shortcut>
+    <shortcut android:shortcutId="new_hand" android:enabled="true"
+        android:icon="@drawable/ic_sc_hand" android:shortcutShortLabel="@string/sc_hand" android:shortcutLongLabel="@string/sc_hand_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.jot.notes" android:targetClass="com.jot.notes.EditorActivity">
+            <extra android:name="start" android:value="hand" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="new_canvas" android:enabled="true"
+        android:icon="@drawable/ic_sc_canvas" android:shortcutShortLabel="@string/sc_canvas" android:shortcutLongLabel="@string/sc_canvas">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.jot.notes" android:targetClass="com.jot.notes.EditorActivity">
+            <extra android:name="start" android:value="canvas" />
+        </intent>
+    </shortcut>
+</shortcuts>

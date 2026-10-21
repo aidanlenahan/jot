@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Jot</string>
+    <string name="sc_note">New note</string>
+    <string name="sc_hand">Handwriting</string>
+    <string name="sc_hand_long">New handwriting page</string>
+    <string name="sc_canvas">Freewrite canvas</string>
+</resources>
