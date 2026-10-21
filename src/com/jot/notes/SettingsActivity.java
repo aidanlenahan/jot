@@ -127,8 +127,27 @@ public class SettingsActivity extends BaseActivity {
             startActivity(new Intent(this, MainActivity.class).putExtra("trash", true));
         });
 
+        header("Updates");
+        toggle("Check for updates",
+                "Once a day Jot asks GitHub for the newest version number and shows a notice on the home screen "
+                        + "when there's an update. Nothing about your notes is sent. This is the only thing Jot uses the internet for.",
+                UpdateCheck.enabled(this), on -> Store.prefs(this).edit().putBoolean("updateCheck", on).apply());
+        row("Check now", "Installed: " + versionName(), v -> {
+            toast("Checking…");
+            UpdateCheck.check(this, true, (latest, newer, err) -> {
+                if (err != null) { toast(err); return; }
+                if (newer) {
+                    Store.prefs(this).edit().remove("dismissedVersion").apply();
+                    dialog().setTitle("Update available")
+                            .setMessage("Jot " + latest + " is available (you have " + versionName() + ").")
+                            .setPositiveButton("Update", (d, w) -> { externalAction = true; UpdateCheck.openUpdater(this); })
+                            .setNegativeButton("Later", null).show();
+                } else toast("You're on the latest version (" + versionName() + ")");
+            });
+        });
+
         header("About");
-        row("Jot " + versionName(), "Free, offline notes. No accounts, ads, tracking or internet permission.", null);
+        row("Jot " + versionName(), "Free, offline notes. No accounts, ads or tracking. The only network use is the optional update check.", null);
     }
 
     private String versionName() {

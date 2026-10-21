@@ -35,6 +35,7 @@ public class MainActivity extends BaseActivity {
     private EditText search;
     private TextView empty;
     private LinearLayout chips;
+    private FrameLayout updateBox;
     private ImageView layoutBtn;
     private String folder = null; // null = all
     private int columns = 1;
@@ -117,6 +118,8 @@ public class MainActivity extends BaseActivity {
             chips.setPadding(Ui.dp(this, 12), Ui.dp(this, 2), Ui.dp(this, 12), Ui.dp(this, 4));
             hs.addView(chips);
             col.addView(hs);
+            updateBox = new FrameLayout(this);
+            col.addView(updateBox);
         }
 
         FrameLayout listWrap = new FrameLayout(this);
@@ -175,6 +178,47 @@ public class MainActivity extends BaseActivity {
         reload();
         new Thread(() -> { Store.housekeeping(getApplicationContext()); }).start();
         if (!trashMode && Store.syncFolder(this) != null) SettingsActivity.syncInBackground(this, false, this::reload);
+        if (!trashMode) {
+            showUpdateBanner();
+            if (UpdateCheck.enabled(this)) UpdateCheck.check(this, false, (latest, newer, err) -> showUpdateBanner());
+        }
+    }
+
+    /** Small card under the folder chips when a newer release exists on GitHub. */
+    private void showUpdateBanner() {
+        if (updateBox == null) return;
+        updateBox.removeAllViews();
+        final String v = UpdateCheck.enabled(this) ? UpdateCheck.pendingUpdate(this) : null;
+        if (v == null) return;
+        int d = Ui.dp(this, 1);
+        LinearLayout card = new LinearLayout(this);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setPadding(16 * d, 8 * d, 6 * d, 8 * d);
+        card.setBackground(Ui.round(pal.card, 14 * d, pal.accent, Math.max(1, d)));
+        TextView t = new TextView(this);
+        t.setText("Jot " + v + " is available");
+        t.setTextColor(pal.text);
+        t.setTextSize(15);
+        card.addView(t, new LinearLayout.LayoutParams(0, -2, 1));
+        TextView later = new TextView(this);
+        later.setText("Later");
+        later.setTextColor(pal.sub);
+        later.setTextSize(14);
+        later.setPadding(12 * d, 8 * d, 12 * d, 8 * d);
+        later.setOnClickListener(x -> { UpdateCheck.dismiss(this, v); showUpdateBanner(); });
+        card.addView(later);
+        TextView upd = new TextView(this);
+        upd.setText("Update");
+        upd.setTextColor(pal.onAccent);
+        upd.setTextSize(14);
+        upd.setTypeface(Typeface.DEFAULT_BOLD);
+        upd.setPadding(14 * d, 8 * d, 14 * d, 8 * d);
+        upd.setBackground(Ui.ripple(pal, Ui.round(pal.accent, 18 * d, 0, 0), null));
+        upd.setOnClickListener(x -> { BaseActivity.externalAction = true; UpdateCheck.openUpdater(this); });
+        card.addView(upd);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-1, -2);
+        lp.setMargins(14 * d, 4 * d, 14 * d, 6 * d);
+        updateBox.addView(card, lp);
     }
 
     @Override protected void onDataChanged() { reload(); }
