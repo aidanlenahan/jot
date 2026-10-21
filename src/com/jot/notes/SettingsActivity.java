@@ -128,7 +128,12 @@ public class SettingsActivity extends BaseActivity {
         });
 
         header("About");
-        row("Jot 1.1", "Free, offline notes. No accounts, ads, tracking or internet permission.", null);
+        row("Jot " + versionName(), "Free, offline notes. No accounts, ads, tracking or internet permission.", null);
+    }
+
+    private String versionName() {
+        try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionName; }
+        catch (Exception e) { return ""; }
     }
 
     private static int indexOf(int[] a, int v) { for (int i = 0; i < a.length; i++) if (a[i] == v) return i; return 0; }

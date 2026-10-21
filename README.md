@@ -2,8 +2,19 @@
 
 Android 7.0+ (API 24). No accounts, no ads, no tracking, no internet permission, no third-party libraries.
 
-## Install / update
-Copy `Jot.apk` to the device and open it. Version 1.1 is signed with the same key as 1.0, so it installs as an update and keeps your notes.
+## Install & updates (Obtainium)
+Jot isn't on an app store; new versions are published on this repo's
+[Releases](https://github.com/aidanlenahan/jot/releases) page. [Obtainium](https://github.com/ImranR98/Obtainium)
+(free, open source) watches that page and installs updates with one tap:
+
+1. Install Obtainium on the device (download its APK from its GitHub releases page; on a Fire tablet allow
+   *Settings → Security & Privacy → Apps from Unknown Sources* for your browser / Files app, then for Obtainium).
+2. In Obtainium tap **Add App**, paste `https://github.com/aidanlenahan/jot` and tap **Add**.
+3. If Jot is already installed, Obtainium detects it and tracks it — your notes are kept. Otherwise tap **Install**.
+4. When an update appears, open Obtainium (or tap its notification) and tap **Update**.
+
+Every release is signed with the same key, so updates install over the existing app and keep your notes.
+You can also download the APK from Releases and open it directly.
 
 ## Features
 **Notes** — titles, pin to top, search, folders (chips on the home screen; long-press a folder to rename/delete),
@@ -32,6 +43,15 @@ fingerprint/face, lock delay); export everything / import backup; local sync fol
 (newest edit wins) — use it to move to another device.
 
 **Local sync** — pick a folder that Syncthing / an SD card / a NAS share syncs; Jot merges `Jot-sync.json` both ways.
+
+## Releasing a new version
+1. Bump `VERSION_CODE` (by 1) and `VERSION_NAME` in `version.txt`.
+2. Merge to `main`. The **Release APK** workflow builds and signs the APK, checks it's signed with the
+   existing key, and publishes release `v<VERSION_NAME>`. Obtainium picks it up from there.
+
+The workflow needs two repository secrets (*Settings → Secrets and variables → Actions*):
+- `JOT_KEYSTORE_BASE64` — the keystore file, base64-encoded (`base64 -w0 jot-release.jks`)
+- `JOT_KEY_PASS` — its password
 
 ## Build from source (no Gradle needed)
 Put `android.jar` (API 34), `aapt2`, `d8.jar` (any jar containing `com.android.tools.r8.D8`), `apksigner.jar`

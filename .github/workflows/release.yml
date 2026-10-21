@@ -1,0 +1,115 @@
+# Builds a signed Jot APK and publishes it as a GitHub Release, which Obtainium
+# watches. A release is created whenever version.txt on main names a version
+# that hasn't been released yet (or when run by hand from the Actions tab).
+name: Release APK
+
+on:
+  push:
+    branches: [main]
+    paths: [version.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      # SHA-256 of the signing certificate already installed on devices. A build
+      # signed with any other key would refuse to update, so the job fails instead.
+      EXPECTED_CERT_SHA256: 1593701d4f26150b2eff5fbfd30aafef177f0a742673cf4627fe49f86c3410c7
+      BUILD_TOOLS: "34.0.0"
+      PLATFORM: android-34
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: ver
+        run: |
+          source ./version.txt
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if this version is already released
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.ver.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Release ${{ steps.ver.outputs.tag }} already exists; bump version.txt to publish a new one."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@v4
+        if: steps.check.outputs.skip == 'false'
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android build tools
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses >/dev/null || true
+          "$SDKM" --install "platforms;$PLATFORM" "build-tools;$BUILD_TOOLS" >/dev/null
+          BT="$ANDROID_HOME/build-tools/$BUILD_TOOLS"
+          T="$RUNNER_TEMP/tools"
+          mkdir -p "$T"
+          ln -s "$ANDROID_HOME/platforms/$PLATFORM/android.jar" "$T/android.jar"
+          ln -s "$BT/aapt2" "$T/aapt2"
+          ln -s "$BT/zipalign" "$T/zipalign"
+          ln -s "$BT/lib/d8.jar" "$T/d8.jar"
+          ln -s "$BT/lib/apksigner.jar" "$T/apksigner.jar"
+          echo "TOOLS=$T" >> "$GITHUB_ENV"
+
+      - name: Restore signing key
+        if: steps.check.outputs.skip == 'false'
+        env:
+          KEYSTORE_B64: ${{ secrets.JOT_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Add the JOT_KEYSTORE_BASE64 and JOT_KEY_PASS repository secrets (see README)."
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/jot-release.jks"
+          echo "JOT_KEYSTORE=$RUNNER_TEMP/jot-release.jks" >> "$GITHUB_ENV"
+
+      - name: Build and sign
+        if: steps.check.outputs.skip == 'false'
+        env:
+          JOT_KEY_PASS: ${{ secrets.JOT_KEY_PASS }}
+        run: ./build.sh
+
+      - name: Check signing certificate
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          DIGEST=$(java -jar "$TOOLS/apksigner.jar" verify --print-certs Jot.apk | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
+          echo "Signed with: $DIGEST"
+          if [ "$DIGEST" != "$EXPECTED_CERT_SHA256" ]; then
+            echo "::error::APK is signed with an unexpected key; installed copies would refuse to update."
+            exit 1
+          fi
+
+      - name: Publish release
+        if: steps.check.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK="Jot-${{ steps.ver.outputs.tag }}.apk"
+          mv Jot.apk "$APK"
+          gh release create "${{ steps.ver.outputs.tag }}" "$APK" \
+            --target "$GITHUB_SHA" \
+            --title "Jot ${{ steps.ver.outputs.name }}" \
+            --generate-notes
+
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/jot-release.jks"
