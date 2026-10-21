@@ -3,6 +3,14 @@
     package="com.jot.notes">
 
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Only used by the optional "Check for updates" (asks GitHub for the latest version number). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Lets "Update" open Obtainium on Android 11+ -->
+    <queries>
+        <package android:name="dev.imranr.obtainium" />
+        <package android:name="dev.imranr.obtainium.fdroid" />
+    </queries>
 
     <application
         android:label="@string/app_name"

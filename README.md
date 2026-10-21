@@ -1,6 +1,7 @@
 # Jot — a small, free, offline notes app for Android
 
-Android 7.0+ (API 24). No accounts, no ads, no tracking, no internet permission, no third-party libraries.
+Android 7.0+ (API 24). No accounts, no ads, no tracking, no third-party libraries. The only network use is an optional
+once-a-day check of this repo's latest release number (Settings → Updates), which shows a notice when an update is out.
 
 ## Install & updates (Obtainium)
 Jot isn't on an app store; new versions are published on this repo's
