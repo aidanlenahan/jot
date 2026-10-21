@@ -492,6 +492,7 @@ public class MainActivity extends BaseActivity {
         pm.getMenu().add(0, 3, 0, "Colour…");
         pm.getMenu().add(0, 4, 0, "Share…");
         pm.getMenu().add(0, 5, 0, "Export…");
+        pm.getMenu().add(0, 7, 0, "Duplicate");
         pm.getMenu().add(0, 6, 0, "Move to trash");
         pm.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
@@ -500,6 +501,16 @@ public class MainActivity extends BaseActivity {
                 case 3: NoteDialogs.color(this, n, () -> saveAndRefresh(n)); return true;
                 case 4: shareDialog(n); return true;
                 case 5: exportDialog(n); return true;
+                case 7:
+                    try {
+                        Store.duplicate(this, n);
+                        reload();
+                        sync();
+                        toast("Duplicated");
+                    } catch (Exception e) {
+                        toast("Couldn't duplicate: " + e.getMessage());
+                    }
+                    return true;
                 case 6:
                     Store.trash(this, n);
                     reload();

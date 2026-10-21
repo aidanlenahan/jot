@@ -106,6 +106,27 @@ public final class Store {
         }
     }
 
+    /** Saves a full copy of a note (own copies of its images, so deleting one never breaks the other). */
+    public static Note duplicate(Context c, Note src) throws Exception {
+        Note n = Note.fromJson(src.toJson());
+        n.id = java.util.UUID.randomUUID().toString();
+        n.created = n.updated = System.currentTimeMillis();
+        n.pinned = false;
+        n.trashed = 0;
+        String t = src.title.trim();
+        n.title = t.isEmpty() ? "Untitled (copy)" : t + " (copy)";
+        for (Note.NBlock b : n.blocks) {
+            if (b.kind != Note.IMAGE || b.img == null) continue;
+            File from = imageFile(c, b.img);
+            if (!from.exists()) continue;
+            String name = java.util.UUID.randomUUID().toString() + ".jpg";
+            try (OutputStream os = new FileOutputStream(imageFile(c, name))) { os.write(readBytes(from)); }
+            b.img = name;
+        }
+        save(c, n);
+        return n;
+    }
+
     /** Moves a note to the trash (restorable for 30 days). */
     public static void trash(Context c, Note n) {
         n.trashed = n.updated = System.currentTimeMillis();
