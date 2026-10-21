@@ -4,6 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 TOOLS="${TOOLS:-../tools}"
+# shellcheck disable=SC1091
+source ./version.txt   # VERSION_CODE / VERSION_NAME — bump these to release an update
 OUT=build
 rm -rf "$OUT" && mkdir -p "$OUT"/{res,gen,classes,dex}
 
@@ -13,7 +15,7 @@ echo "[1/6] compiling resources"
 echo "[2/6] linking resources"
 "$TOOLS/aapt2" link -I "$TOOLS/android.jar" --manifest AndroidManifest.xml \
   --java "$OUT/gen" --min-sdk-version 24 --target-sdk-version 34 \
-  --version-code 2 --version-name 1.1 \
+  --version-code "$VERSION_CODE" --version-name "$VERSION_NAME" \
   -o "$OUT/unsigned.apk" "$OUT/res/compiled.zip"
 
 echo "[3/6] compiling java"
